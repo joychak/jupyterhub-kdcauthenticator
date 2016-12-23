@@ -129,7 +129,7 @@ class KDCAuthenticator(Authenticator):
             '''
         state = None
         try:
-            rc, state = kerberos.authGSSServerInit(self.service_name)
+            rc, state = kerberos.authGSSServerInit('HTTP')
             self.log.info("kerberos.authGSSServerInit")
             if rc != kerberos.AUTH_GSS_COMPLETE:
                 return None
