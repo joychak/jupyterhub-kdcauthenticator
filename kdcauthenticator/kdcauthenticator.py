@@ -112,7 +112,7 @@ class KDCAuthenticator(LocalAuthenticator):
 
     def get_handlers(self, app):
         return [
-            (r'/login', self.login_handler),
+            (r'/kdc_login', self.login_handler),
             (r'/kdc_callback', self.callback_handler),
         ]
 
