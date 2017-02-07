@@ -3,6 +3,7 @@ import kerberos
 from tornado import gen, web
 from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
+from jupyterhub.auth import LocalAuthenticator
 from jupyterhub.utils import url_path_join
 from tornado import gen
 
@@ -94,7 +95,7 @@ class KDCCallbackHandler(BaseHandler):
         else:
             self._unauthorized()
 
-class KDCAuthenticator(Authenticator):
+class KDCAuthenticator(LocalAuthenticator):
 
     service_name = Unicode('',
                              help="This is a service principal"
@@ -111,7 +112,7 @@ class KDCAuthenticator(Authenticator):
 
     def get_handlers(self, app):
         return [
-            (r'/login', self.login_handler),
+            (r'/kdc_login', self.login_handler),
             (r'/kdc_callback', self.callback_handler),
         ]
 
@@ -129,7 +130,7 @@ class KDCAuthenticator(Authenticator):
             '''
         state = None
         try:
-            rc, state = kerberos.authGSSServerInit(self.service_name)
+            rc, state = kerberos.authGSSServerInit('HTTP')
             self.log.info("kerberos.authGSSServerInit")
             if rc != kerberos.AUTH_GSS_COMPLETE:
                 return None
