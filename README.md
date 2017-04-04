@@ -1,4 +1,4 @@
-#KDC authenticator
+#KDCAuthenticator
 
 **KDC authenticator allows to authenticate the JuypterHub user using Kerberos protocol**
 
