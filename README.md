@@ -1,6 +1,8 @@
+#KDC authenticator
+
 **KDC authenticator allows to authenticate the JuypterHub user using Kerberos protocol**
 
-#How to install, configure and run KDCAuthenticator
+#Install, Configure and Run
 
 1. Install KDC Authenticator
 
@@ -21,10 +23,10 @@
  c.LocalAuthenticator.create_system_users = True
  ```
 
-3. The Service principle for JupyterHub authenticator is configured to "HTTP" but can be configured by -
+3. The Service principal for JupyterHub authenticator is configured to "HTTP" but can be configured by -
 
  ```
- c.KDCAuthenticator.service_name = '<HTTP-Service-Principle>'
+ c.KDCAuthenticator.service_name = '<HTTP-Service-Principal>'
  ```
 
 4. Run the JupyterHub command with Kerberos environment variables -
