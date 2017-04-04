@@ -4,11 +4,18 @@ KDC authenticator allows to authenticate the JuypterHub user using Kerberos prot
 
 #Install, Configure and Run
 
-1. Install KDC Authenticator
+1. Install KDC Authenticator -
 
  Run the following command at kdcauthenticator directory
  ```
- pip3 install -e kdcauthenticator
+ pip3 install jupyterhub-kdcauthenticator
+ ```
+
+ Or clone the repository and install -
+ ```
+ git clone https://github.com/bloomberg/kdcauthenticator.git
+ cd kdcauthenticator
+ pip3 install -e .
  ```
 
 2. Configure JupyterHub for KDC Authenticator
