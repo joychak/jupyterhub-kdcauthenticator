@@ -1,4 +1,6 @@
-#Instruction to install, configure and run KDCAuthenticator
+KDC authenticator allows to authenticate the JuypterHub user using Kerberos protocol
+
+#How to install, configure and run KDCAuthenticator
 
 1. Install KDC Authenticator
 
