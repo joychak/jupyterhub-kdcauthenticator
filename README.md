@@ -1,6 +1,6 @@
 #KDCAuthenticator
 
-**KDC authenticator allows to authenticate the JuypterHub user using Kerberos protocol**
+KDC authenticator allows to authenticate the JuypterHub user using Kerberos protocol.
 
 #Install, Configure and Run
 
