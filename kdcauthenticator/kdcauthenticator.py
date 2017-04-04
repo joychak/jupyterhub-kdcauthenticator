@@ -1,7 +1,6 @@
 import kerberos
 
 from tornado import gen, web
-from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.auth import LocalAuthenticator
 from jupyterhub.utils import url_path_join
@@ -21,21 +20,19 @@ class KDCLoginHandler(BaseHandler):
         self.redirect(redirect_uri)
 
 class KDCCallbackHandler(BaseHandler):
-    """Basic handler for OAuth callback. Calls authenticator to verify username."""
+    """Basic handler for KDC callback. Calls authenticator to verify Kerberos credential."""
 
     def _unauthorized(self):
         '''
         Indicate that authentication is required
         '''
-        #return Response('Unauthorized', 401, {'WWW-Authenticate': 'Negotiate'})
-        #self.log.info("Request unautorized")
         self.set_status(401)
         self.set_header('WWW-Authenticate','Negotiate')
         self.finish()
 
     def _stop(self, username):
         html = self._render(
-            login_error='Invalid username or password',
+            login_error='Invalid credential',
             username=username,
         )
         self.finish(html)
@@ -45,7 +42,6 @@ class KDCCallbackHandler(BaseHandler):
         Indicate a complete authentication failure
         '''
         raise web.HTTPError(403)
-        #return Response('Forbidden', 403)
 
     @gen.coroutine
     def get(self):
@@ -62,7 +58,6 @@ class KDCCallbackHandler(BaseHandler):
             elif result != None:
                 rc = result
 
-            #self.log.info("self.authenticator.get_authenticated_user called")
             if rc.upper() == "KERBEROS.AUTH_GSS_COMPLETE":
                 self.log.info("kerberos.AUTH_GSS_COMPLETE: Username= " + username)
                 if username:
@@ -84,9 +79,6 @@ class KDCCallbackHandler(BaseHandler):
                     self.log.info("User logged in: %s", username)
                 else:
                     self._stop(username)
-
-                # self.set_login_cookie(user) #ctx.kerberos_user)
-                # self.redirect(url_path_join(self.hub.server.base_url, 'home'))
             elif rc.upper() != "KERBEROS.AUTH_GSS_CONTINUE":
                 self.log.info("Request forbidden")
                 self._forbidden()
@@ -96,8 +88,11 @@ class KDCCallbackHandler(BaseHandler):
             self._unauthorized()
 
 class KDCAuthenticator(LocalAuthenticator):
+    """
+    Kerberos Authenticator for JupyterHub
+    """
 
-    service_name = Unicode('',
+    service_name = Unicode('HTTP',
                              help="This is a service principal"
                              ).tag(config=True)
 
@@ -120,9 +115,6 @@ class KDCAuthenticator(LocalAuthenticator):
     def authenticate(self, handler, data):
         '''
             Performs GSSAPI Negotiate Authentication
-            On success also stashes the server response token for mutual authentication
-            at the top of request context with the name kerberos_token, along with the
-            authenticated user principal with the name kerberos_user.
             @param token: GSSAPI Authentication Token
             @type token: str
             @returns gssapi return code or None on failure
@@ -130,22 +122,18 @@ class KDCAuthenticator(LocalAuthenticator):
             '''
         state = None
         try:
-            rc, state = kerberos.authGSSServerInit('HTTP')
+            rc, state = kerberos.authGSSServerInit(self.service_name)
             self.log.info("kerberos.authGSSServerInit")
             if rc != kerberos.AUTH_GSS_COMPLETE:
                 return None
 
-            #self.log.info("rc == kerberos.AUTH_GSS_COMPLETE with data=" + data)
             rc = kerberos.authGSSServerStep(state, data)
             self.log.info("kerberos.authGSSServerStep")
             if rc == kerberos.AUTH_GSS_COMPLETE:
-                #self.log.info("rc == kerberos.AUTH_GSS_COMPLETE")
-                #ctx.kerberos_token = kerberos.authGSSServerResponse(state)
                 user = kerberos.authGSSServerUserName(state)
                 self.log.info("Extracted User = " + user)
                 return "kerberos.AUTH_GSS_COMPLETE:" + user
             elif rc == kerberos.AUTH_GSS_CONTINUE:
-                #self.log.info("rc == kerberos.AUTH_GSS_CONTINUE")
                 return "kerberos.AUTH_GSS_CONTINUE"
             else:
                 self.log.info("return None")
